@@ -25,15 +25,26 @@ body { font-size: 14px; }
   padding: 9px 14px; font-size: 12.5px; margin-bottom: 18px;
 }
 
+/* 手机端：侧栏换成顶部品牌条 + 底部标签栏 */
+.m-top, .tabbar { display: none; }
 @media (max-width: 860px) {
   .adm { grid-template-columns: 1fr; }
-  .side {
-    position: sticky; height: auto; flex-direction: row; align-items: center; overflow-x: auto; padding: 10px 12px; z-index: 10;
-    border-right: none; border-bottom: 1px solid var(--line); gap: 2px;
+  .side { display: none; }
+  .m-top {
+    display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 20; background: var(--surface);
+    border-bottom: 1px solid var(--line); padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px;
   }
-  .side .brand-sm, .side .sub, .side .spacer, .side .who { display: none; }
-  .nav-a { white-space: nowrap; padding: 8px 10px; }
-  .main { padding: 18px 16px 48px; }
+  .m-top .brand-sm { font-size: 15px; }
+  .m-top .sub { font-size: 12px; color: var(--ink-faint); }
+  .tabbar {
+    display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    background: var(--surface); border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+  .tab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 600; color: var(--ink-faint); padding: 4px 0; }
+  .tab .icon { width: 21px; height: 21px; }
+  .tab.on { color: var(--accent); }
+  .main { padding: 16px 16px calc(84px + env(safe-area-inset-bottom, 0px)); }
+  .page-hd h1 { font-size: 20px; }
 }
 
 /* 按钮 */
@@ -65,7 +76,7 @@ body { font-size: 14px; }
 /* 表格 */
 .table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow-x: auto; box-shadow: var(--shadow-soft); }
 table.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-@media (max-width: 860px) { table.tbl { min-width: 820px; } }
+@media (max-width: 860px) and (min-width: 701px) { table.tbl { min-width: 820px; } }
 .tbl th {
   text-align: left; font-weight: 600; color: var(--ink-faint); font-size: 12.5px; padding: 11px 14px; border-bottom: 1px solid var(--line);
   white-space: nowrap; background: var(--surface);
@@ -103,7 +114,34 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .check { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; cursor: pointer; font-weight: 600; }
 .check input { accent-color: var(--accent); width: 16px; height: 16px; }
 @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+/* 手机：输入框 16px 防止 iOS 聚焦放大 */
+@media (max-width: 700px) { .input, .select { font-size: 16px; } }
 
 /* 卡片 */
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-soft); padding: 18px 20px; }
 .panel h2 { font-size: 15px; margin: 0 0 14px; font-weight: 700; }
+
+/* 手机：每行变成一张卡片，单元格显示为「表头：值」 */
+@media (max-width: 700px) {
+  .table-wrap { background: none; border: none; box-shadow: none; overflow: visible; }
+  .tbl thead { display: none; }
+  .tbl, .tbl tbody, .tbl tr, .tbl td { display: block; }
+  .tbl tr {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; margin-bottom: 10px;
+    box-shadow: var(--shadow-soft);
+  }
+  .tbl tbody tr:hover td { background: none; }
+  .tbl td { border: none; padding: 5px 0; text-align: right; overflow-wrap: anywhere; }
+  .tbl td::after { content: ""; display: table; clear: both; }
+  .tbl td::before { content: attr(data-label); color: var(--ink-faint); font-size: 12.5px; float: left; margin-right: 12px; }
+  .tbl td:first-child { font-size: 15.5px; text-align: left; padding-bottom: 6px; }
+  .tbl td:first-child::before { display: none; }
+  .tbl td[data-label=""]::before { display: none; }
+  .tbl td.acts { border-top: 1px dashed var(--line); margin-top: 6px; padding-top: 8px; }
+  .tbl td.num { text-align: right; }
+  .tbl td.empty-row { text-align: center; }
+  .tbl td.empty-row::before { display: none; }
+  .tbl tr:has(.empty-row) { background: none; border: none; box-shadow: none; }
+  .toolbar .input { width: 100%; }
+  .toolbar .select { flex: 1 1 40%; }
+}

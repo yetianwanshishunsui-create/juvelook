@@ -64,6 +64,6 @@ export const portalApi = {
 export const PRODUCT = { blue: 'JUVELOOK', black: 'JUVELOOK Volume' };
 export const PRODUCT_SHORT = { blue: 'JUVELOOK', black: 'Volume' };
 
-// 前台 H5 地址：正式环境为站点根目录；在线演示版为 app.html
-export const H5_URL = import.meta.env.VITE_DEMO ? './app.html' : './';
+// 前台 H5 地址（站点根目录）
+export const H5_URL = './';
 export const IS_DEMO = !!import.meta.env.VITE_DEMO;

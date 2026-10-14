@@ -30,4 +30,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 .m-x { border: none; background: none; color: var(--ink-faint); cursor: pointer; padding: 4px; display: grid; }
 .m-bd { padding: 8px 20px 4px; overflow: auto; }
 .m-ft { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 20px 18px; }
+/* 手机：从底部弹出 */
+@media (max-width: 700px) {
+  .m-overlay { place-items: end stretch; padding: 0; }
+  .m-box { max-width: none !important; border-radius: 18px 18px 0 0; max-height: 92vh; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .m-ft .btn { flex: 1; padding: 11px; }
+}
 </style>

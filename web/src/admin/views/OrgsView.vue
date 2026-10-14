@@ -71,7 +71,7 @@ async function remove(o) {
   </div>
 
   <div class="table-wrap" :style="{ opacity: loading ? 0.6 : 1 }">
-    <table class="tbl">
+    <table v-cards class="tbl">
       <thead>
         <tr><th>机构</th><th>授权编号</th><th>城市</th><th>授权产品</th><th class="num">医生</th><th class="num">JUVELOOK</th><th class="num">Volume</th><th>状态</th><th></th></tr>
       </thead>

@@ -12,6 +12,7 @@ export const router = createRouter({
     { path: '/scans', component: () => import('./views/ScansView.vue'), meta: { title: '核销记录' } },
     { path: '/import', component: () => import('./views/ImportView.vue'), meta: { title: '数据导入' } },
     { path: '/audit', component: () => import('./views/AuditView.vue'), meta: { title: '操作日志' } },
+    { path: '/more', component: () => import('./views/MoreView.vue'), meta: { title: '更多' } },
     { path: '/account', component: () => import('./views/AccountView.vue'), meta: { title: '账号设置' } },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],

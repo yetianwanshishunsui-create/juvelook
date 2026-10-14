@@ -98,7 +98,7 @@ const ACT = { create: '新增', update: '更新' };
 
     <h3 class="sec">机构（{{ plan.orgs.length }} 行）</h3>
     <div class="table-wrap">
-      <table class="tbl">
+      <table v-cards class="tbl">
         <thead><tr><th>行号</th><th>机构名称</th><th>城市</th><th>处理</th><th>问题</th></tr></thead>
         <tbody>
           <tr v-for="o in plan.orgs" :key="o.row">
@@ -115,7 +115,7 @@ const ACT = { create: '新增', update: '更新' };
 
     <h3 class="sec">医生（{{ plan.doctors.length }} 行）</h3>
     <div class="table-wrap">
-      <table class="tbl">
+      <table v-cards class="tbl">
         <thead><tr><th>行号</th><th>医生姓名</th><th>所属机构</th><th>处理</th><th>问题</th></tr></thead>
         <tbody>
           <tr v-for="d in plan.doctors" :key="d.row">

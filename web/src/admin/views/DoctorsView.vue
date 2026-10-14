@@ -87,7 +87,7 @@ const authed = (d, k) => (k === 'blue' ? d.auth_blue : d.auth_black);
   </div>
 
   <div class="table-wrap" :style="{ opacity: loading ? 0.6 : 1 }">
-    <table class="tbl">
+    <table v-cards class="tbl">
       <thead>
         <tr><th>医生</th><th>认证编号</th><th>所属机构</th><th>手机号</th><th class="num">JUVELOOK</th><th class="num">Volume</th><th class="num">扫码核销</th><th>状态</th><th></th></tr>
       </thead>

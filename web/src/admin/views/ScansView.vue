@@ -28,7 +28,7 @@ const { filters, page, data, loading } = useList(adminApi.scans, {
   </div>
 
   <div class="table-wrap" :style="{ opacity: loading ? 0.6 : 1 }">
-    <table class="tbl">
+    <table v-cards class="tbl">
       <thead>
         <tr><th>核销时间</th><th>产品</th><th>防伪码</th><th>批号</th><th>医生</th><th>机构</th><th>验真提示</th></tr>
       </thead>

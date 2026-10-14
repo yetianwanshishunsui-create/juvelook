@@ -79,7 +79,6 @@ const totalRange = computed(() => days.value.reduce((s, d) => s + d.blue + d.bla
 
 <template>
   <div class="page-hd"><h1>数据概览</h1></div>
-  <div class="demo-banner">当前为虚拟演示数据（机构、医生、手机号均为程序生成），客户正式数据到位后通过「数据导入」替换。</div>
 
   <p v-if="error" style="color: var(--danger)">{{ error }}</p>
 

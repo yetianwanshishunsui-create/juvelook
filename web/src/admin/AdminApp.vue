@@ -3,7 +3,10 @@ import { useRoute, useRouter } from 'vue-router';
 import Icon from '../components/Icon.vue';
 import { session, toast, confirmBox } from './store.js';
 import { adminApi } from './api.js';
-import { H5_URL, IS_DEMO } from '../api.js';
+import { defineAsyncComponent } from 'vue';
+import { H5_URL } from '../api.js';
+
+const TestPanel = import.meta.env.VITE_DEMO ? defineAsyncComponent(() => import('../components/TestPanel.vue')) : null;
 import Modal from './components/Modal.vue';
 
 const route = useRoute();
@@ -17,6 +20,15 @@ const NAV = [
   { to: '/audit', label: '操作日志', icon: 'list' },
   { to: '/account', label: '账号设置', icon: 'key' },
 ];
+
+const TABS = [
+  { to: '/', label: '概览', icon: 'chart' },
+  { to: '/doctors', label: '医生', icon: 'doc' },
+  { to: '/orgs', label: '机构', icon: 'org' },
+  { to: '/scans', label: '核销', icon: 'scan' },
+  { to: '/more', label: '更多', icon: 'list' },
+];
+const tabOn = (to) => (to === '/more' ? ['/more', '/import', '/audit', '/account'].includes(route.path) : route.path === to);
 
 async function logout() {
   await adminApi.logout().catch(() => {});
@@ -33,12 +45,18 @@ async function logout() {
       <div class="sub">认证查询 · 运营后台</div>
       <RouterLink v-for="n in NAV" :key="n.to" :to="n.to" class="nav-a"><Icon :name="n.icon" />{{ n.label }}</RouterLink>
       <div class="spacer"></div>
-      <a v-if="IS_DEMO" class="nav-a" href="./"><Icon name="list" />演示首页</a>
       <a class="nav-a" :href="H5_URL"><Icon name="home" />查看前台</a>
       <button class="nav-a btn link" style="justify-content: flex-start" type="button" @click="logout"><Icon name="logout" />退出登录</button>
       <div class="who">当前账号 <b>{{ session.user.username }}</b></div>
     </nav>
+    <header class="m-top">
+      <div class="brand-sm">juvelook<span class="reg">®</span></div>
+      <span class="sub">运营后台</span>
+    </header>
     <main class="main"><RouterView /></main>
+    <nav class="tabbar" aria-label="主导航">
+      <RouterLink v-for="t in TABS" :key="t.to" :to="t.to" class="tab" :class="{ on: tabOn(t.to) }"><Icon :name="t.icon" />{{ t.label }}</RouterLink>
+    </nav>
   </div>
 
   <Modal v-if="confirmBox.open" :title="confirmBox.title" width="420px" @close="confirmBox.close(false)">
@@ -49,6 +67,7 @@ async function logout() {
     </template>
   </Modal>
 
+  <component :is="TestPanel" v-if="TestPanel" :lift="!!session.user" />
   <div class="adm-toast" :class="[toast.kind, { on: toast.msg }]" role="status">{{ toast.msg }}</div>
 </template>
 

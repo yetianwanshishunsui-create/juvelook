@@ -25,7 +25,7 @@ function describe(l) {
 <template>
   <div class="page-hd"><h1>操作日志</h1></div>
   <div class="table-wrap" :style="{ opacity: loading ? 0.6 : 1 }">
-    <table class="tbl">
+    <table v-cards class="tbl">
       <thead><tr><th>时间</th><th>账号</th><th>操作</th><th>对象</th><th>说明</th></tr></thead>
       <tbody>
         <tr v-for="l in data.items" :key="l.id">

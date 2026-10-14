@@ -1,9 +1,11 @@
 <script setup>
-import { IS_DEMO } from './api.js';
+import { defineAsyncComponent } from 'vue';
+
+// 测试版才加载测试面板；正式构建中 VITE_DEMO 为空，整段被移除
+const TestPanel = import.meta.env.VITE_DEMO ? defineAsyncComponent(() => import('./components/TestPanel.vue')) : null;
 </script>
 
 <template>
-  <div v-if="IS_DEMO" class="demo-bar">在线演示 · 虚拟数据，仅保存在本机浏览器 · <a href="./">返回演示首页</a></div>
   <div class="wrap">
     <RouterView v-slot="{ Component }">
       <KeepAlive include="HomeView">
@@ -11,12 +13,5 @@ import { IS_DEMO } from './api.js';
       </KeepAlive>
     </RouterView>
   </div>
+  <component :is="TestPanel" v-if="TestPanel" />
 </template>
-
-<style>
-.demo-bar {
-  text-align: center; font-size: 11.5px; font-weight: 600; color: var(--accent-deep); background: var(--accent-wash);
-  padding: 6px 16px; border-bottom: 1px solid var(--line);
-}
-.demo-bar a { text-decoration: underline; }
-</style>
