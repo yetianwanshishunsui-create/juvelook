@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import { resolve } from 'node:path';
 
 export default defineConfig({
   plugins: [vue()],
@@ -11,5 +12,9 @@ export default defineConfig({
   },
   build: {
     target: ['es2019', 'safari13'],
+    // 两个入口：公众号 H5（含医生端）与运营后台
+    rollupOptions: {
+      input: { main: resolve(import.meta.dirname, 'index.html'), admin: resolve(import.meta.dirname, 'admin.html') },
+    },
   },
 });

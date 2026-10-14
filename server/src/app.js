@@ -1,6 +1,12 @@
 import express from 'express';
 import { existsSync } from 'node:fs';
 import { createQueries } from './queries.js';
+import { createSessions } from './auth.js';
+import { createAdminRouter } from './admin.js';
+import { createPortalRouter } from './portal.js';
+import { createScanService } from './scan.js';
+import { createVerifier } from './verify.js';
+import { createWechat } from './wechat.js';
 
 const MAX_QUERY_LEN = 40;
 
@@ -18,7 +24,8 @@ function rateLimit({ windowMs, max }) {
 
 const cleanQuery = (v) => (typeof v === 'string' ? v.trim().slice(0, MAX_QUERY_LEN) : '');
 
-export function createApp(db, { staticDir, rateLimitMax = 120 } = {}) {
+export function createApp(db, opts = {}) {
+  const { staticDir, rateLimitMax = 120, secureCookie = false, verify: verifyCfg = { mode: 'mock' }, wechat: wechatCfg = {} } = opts;
   const q = createQueries(db);
   const app = express();
   // 部署在 Nginx 反向代理之后，取真实客户端 IP
@@ -31,6 +38,17 @@ export function createApp(db, { staticDir, rateLimitMax = 120 } = {}) {
     res.set('Cache-Control', 'no-store');
     next();
   });
+
+  api.use(express.json({ limit: '100kb' }));
+
+  const sessions = createSessions(db, { secureCookie });
+  const redeem = createScanService(db, {
+    verify: opts.verifier || createVerifier(verifyCfg),
+    allowExpired: !!verifyCfg.allowExpired,
+    fallbackKind: verifyCfg.fallbackKind || null,
+  });
+  api.use('/admin', createAdminRouter(db, sessions));
+  api.use('/portal', createPortalRouter(db, sessions, { redeem, wechat: createWechat(wechatCfg) }));
 
   api.get('/meta', (req, res) => res.json(q.meta()));
 
@@ -65,6 +83,7 @@ export function createApp(db, { staticDir, rateLimitMax = 120 } = {}) {
 
   // 生产环境由同一进程托管 H5 构建产物（前台使用 hash 路由，无需路由回退）
   if (staticDir && existsSync(staticDir)) {
+    app.get('/admin', (req, res) => res.redirect('/admin.html'));
     app.use(
       express.static(staticDir, {
         setHeaders(res, path) {
@@ -78,6 +97,10 @@ export function createApp(db, { staticDir, rateLimitMax = 120 } = {}) {
 
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
+    // 请求体格式错误、过大等客户端错误
+    if (err.status >= 400 && err.status < 500) {
+      return res.status(err.status).json({ error: err.status === 413 ? '上传内容过大' : '请求格式不正确' });
+    }
     console.error(err);
     res.status(500).json({ error: '服务异常，请稍后再试' });
   });

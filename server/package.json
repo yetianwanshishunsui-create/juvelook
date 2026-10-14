@@ -11,9 +11,14 @@
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
     "seed": "node src/seed.js",
-    "test": "node --test"
+    "test": "node --test \"test/**/*.test.js\"",
+    "admin": "node src/create-admin.js"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "express": "^5.3.0"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
   }
 }

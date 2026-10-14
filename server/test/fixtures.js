@@ -1,5 +1,5 @@
-// 演示数据（与原型一致）。正式数据由客户按 Excel 模板提供，经运营后台导入。
-import { newId } from './db.js';
+// 测试夹具：小而固定的数据集，断言基于这些值。
+import { newId } from '../src/db.js';
 
 const ORGS = [
   { key: 'o1', name: '华瑅医疗美容门诊部', city: '上海', address: '上海市静安区南京西路1788号', blue: 1, black: 1 },

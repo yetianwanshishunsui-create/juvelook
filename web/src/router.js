@@ -8,6 +8,7 @@ export const router = createRouter({
     { path: '/', name: 'home', component: HomeView },
     { path: '/doctor/:id', name: 'doctor', component: () => import('./views/DoctorView.vue'), meta: { title: '医生详情' } },
     { path: '/org/:id', name: 'org', component: () => import('./views/OrgView.vue'), meta: { title: '机构详情' } },
+    { path: '/portal', name: 'portal', component: () => import('./views/PortalView.vue'), meta: { title: '医生工作台' } },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   scrollBehavior: (to, from, saved) => saved || { top: 0 },

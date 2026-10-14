@@ -91,6 +91,8 @@ const noneText = computed(() => {
 <template>
   <div class="topbar home-top">
     <div class="brand-sm">juvelook<span class="reg">®</span></div>
+    <span style="flex: 1"></span>
+    <RouterLink to="/portal" class="portal-link"><Icon name="scan" class="ic-16" />医生入口</RouterLink>
   </div>
 
   <section class="hero">
@@ -208,6 +210,10 @@ const noneText = computed(() => {
 
 <style scoped>
 .home-top { padding-top: 16px; }
+.portal-link {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: var(--accent-deep);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 6px 12px; box-shadow: var(--shadow-soft);
+}
 
 .hero {
   position: relative; overflow: hidden; border-radius: 20px; margin: 4px 0 2px; padding: 24px 22px 22px; color: #fff;

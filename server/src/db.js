@@ -53,7 +53,56 @@ const MIGRATIONS = [
   );
   CREATE INDEX scans_doctor ON scans(doctor_id, created_at);
   `,
+  `
+  -- 医生端登录：认证编号 + 手机号；正式环境首次登录后绑定微信 openid
+  ALTER TABLE doctors ADD COLUMN mobile TEXT NOT NULL DEFAULT '';
+  ALTER TABLE doctors ADD COLUMN wx_openid TEXT;
+  CREATE UNIQUE INDEX doctors_openid_uq ON doctors(wx_openid) WHERE wx_openid IS NOT NULL;
+  CREATE INDEX scans_created ON scans(created_at);
+
+  CREATE TABLE admins (
+    id             TEXT PRIMARY KEY,
+    username       TEXT NOT NULL UNIQUE,
+    name           TEXT NOT NULL DEFAULT '',
+    pass_hash      TEXT NOT NULL,
+    created_at     TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    last_login_at  TEXT
+  );
+
+  -- 登录会话：只存 token 的哈希，数据库泄露也无法冒用会话
+  CREATE TABLE sessions (
+    token_hash   TEXT PRIMARY KEY,
+    kind         TEXT NOT NULL CHECK (kind IN ('admin','doctor')),
+    subject_id   TEXT NOT NULL,
+    expires_at   INTEGER NOT NULL
+  );
+  CREATE INDEX sessions_subject ON sessions(kind, subject_id);
+
+  -- 后台操作留痕
+  CREATE TABLE audit_logs (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    admin_id    TEXT,
+    action      TEXT NOT NULL,
+    entity      TEXT NOT NULL,
+    entity_id   TEXT,
+    detail      TEXT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+  );
+  `,
 ];
+
+// 事务包装：fn 抛错则回滚
+export function tx(db, fn) {
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    const out = fn();
+    db.exec('COMMIT');
+    return out;
+  } catch (err) {
+    db.exec('ROLLBACK');
+    throw err;
+  }
+}
 
 export function openDb(file) {
   if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true });

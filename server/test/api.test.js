@@ -2,7 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { openDb } from '../src/db.js';
 import { createApp } from '../src/app.js';
-import { seedDemo } from '../src/demo-data.js';
+import { seedDemo } from './fixtures.js';
 
 let server, base, db, ids;
 
