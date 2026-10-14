@@ -8,6 +8,15 @@ export class ApiError extends Error {
 
 // 统一请求：GET 参数走 query，其他方法 JSON 体；Blob / ArrayBuffer 原样上传
 export async function request(method, path, { params, body, signal } = {}) {
+  // 在线演示版：请求交给浏览器内模拟后端（正式构建中此分支被整体移除）
+  if (import.meta.env.VITE_DEMO) {
+    const { mockRequest } = await import('./demo/mock.js');
+    try {
+      return await mockRequest(method, path, { params: params || {}, body });
+    } catch (err) {
+      throw new ApiError(err.body?.error || err.message, err.status || 500, err.body || {});
+    }
+  }
   const qs = params
     ? '?' + new URLSearchParams(Object.entries(params).filter(([, v]) => v !== '' && v != null)).toString()
     : '';
@@ -54,3 +63,7 @@ export const portalApi = {
 
 export const PRODUCT = { blue: 'JUVELOOK', black: 'JUVELOOK Volume' };
 export const PRODUCT_SHORT = { blue: 'JUVELOOK', black: 'Volume' };
+
+// 前台 H5 地址：正式环境为站点根目录；在线演示版为 app.html
+export const H5_URL = import.meta.env.VITE_DEMO ? './app.html' : './';
+export const IS_DEMO = !!import.meta.env.VITE_DEMO;

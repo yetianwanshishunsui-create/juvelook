@@ -3,10 +3,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { randomBytes } from 'node:crypto';
-
-// 对外 ID 用随机串而不是自增数字，避免被按序号遍历抓取医生信息
-export const newId = () => randomBytes(9).toString('base64url');
+export { newId } from './ids.js';
 
 // 版本化迁移：PRAGMA user_version 记录已执行到第几条
 const MIGRATIONS = [

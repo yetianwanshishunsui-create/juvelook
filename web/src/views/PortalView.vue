@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { portalApi, PRODUCT } from '../api.js';
+import { portalApi, PRODUCT, IS_DEMO } from '../api.js';
 import { initWechat, wxScan, inWechat } from '../wx.js';
 import Icon from '../components/Icon.vue';
 import VerifiedPill from '../components/VerifiedPill.vue';
@@ -154,6 +154,8 @@ const hint = computed(() =>
       <p v-if="loginErr" class="err" role="alert">{{ loginErr }}</p>
       <button class="primary" type="submit" :disabled="loggingIn">{{ loggingIn ? '登录中…' : '登录' }}</button>
     </form>
+    <p v-if="IS_DEMO" class="demo-hint">演示账号：认证编号 <b>JVL-D0001</b> · 手机号 <b>13900000001</b>
+      <button type="button" class="fill" @click="form = { code: 'JVL-D0001', mobile: '13900000001' }">一键填入</button></p>
     <p class="foot">认证编号与手机号由品牌方登记；如无法登录请联系品牌方运营人员</p>
   </section>
 
@@ -179,6 +181,7 @@ const hint = computed(() =>
         <Icon name="scan" style="width: 20px; height: 20px" />{{ scanning ? '核销中…' : '扫码核销' }}
       </button>
       <p class="scan-hint">{{ hint }}</p>
+      <p v-if="IS_DEMO" class="demo-hint">演示防伪码：<b>86173880123456789013</b>（JUVELOOK）、<b>86173880123456789012</b>（Volume）；末位改其他数字可生成新码；以 0000 结尾为无法识别，以 7 开头为窜货。</p>
     </article>
 
     <div class="sect-lab rec-lab"><span>我的核销记录</span><b>共 {{ me.scanTotal }} 条</b></div>
@@ -272,6 +275,8 @@ const hint = computed(() =>
   padding: 12px 13px; font-size: 16px; font-family: inherit; outline: none;
 }
 .fld input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-wash); }
+.demo-hint { font-size: 12.5px; line-height: 1.7; color: var(--accent-deep); background: var(--accent-wash); border-radius: 12px; padding: 10px 12px; margin: 14px 0 0; overflow-wrap: anywhere; }
+.fill { margin-left: 6px; border: none; background: var(--accent); color: #fff; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
 .err { color: var(--danger); font-size: 13px; margin: -4px 0 12px; }
 
 .rec-lab { padding: 0 4px; margin-top: 22px; }

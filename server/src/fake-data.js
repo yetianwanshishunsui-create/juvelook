@@ -1,7 +1,7 @@
 // 虚拟数据：在客户正式数据到位前用于开发、演示与验收走查。
 // 机构名、医生名、地址、手机号均为程序生成的虚构信息；手机号统一在 139-0000-xxxx 号段。
 // 使用固定随机种子，每次生成结果一致，便于对照截图与测试。
-import { newId, tx } from './db.js';
+import { newId } from './ids.js';
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -121,28 +121,4 @@ export function generateFakeData({ seed = 20261014, now = new Date() } = {}) {
   scans.sort((a, b) => a.created_at.localeCompare(b.created_at));
 
   return { orgs, doctors: doctors.map(({ _org, ...d }) => d), scans };
-}
-
-// 仅在库为空时写入
-export function seedFakeData(db, opts) {
-  if (db.prepare('SELECT COUNT(*) AS n FROM orgs').get().n > 0) return null;
-  const data = generateFakeData(opts);
-  const insOrg = db.prepare(
-    `INSERT INTO orgs (id, code, name, city, address, auth_blue, auth_black, status)
-     VALUES (:id, :code, :name, :city, :address, :auth_blue, :auth_black, :status)`,
-  );
-  const insDoc = db.prepare(
-    `INSERT INTO doctors (id, code, name, org_id, mobile, blue_count, black_count, status)
-     VALUES (:id, :code, :name, :org_id, :mobile, :blue_count, :black_count, :status)`,
-  );
-  const insScan = db.prepare(
-    `INSERT INTO scans (id, code, doctor_id, org_id, kind, product_name, batch_number, position_flag, verify_raw, created_at)
-     VALUES (:id, :code, :doctor_id, :org_id, :kind, :product_name, :batch_number, :position_flag, NULL, :created_at)`,
-  );
-  tx(db, () => {
-    data.orgs.forEach((o) => insOrg.run(o));
-    data.doctors.forEach((d) => insDoc.run(d));
-    data.scans.forEach((s) => insScan.run(s));
-  });
-  return data;
 }

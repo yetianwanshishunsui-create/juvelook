@@ -1,6 +1,8 @@
 // 扫码核销：验真 → 判品类 → 校验机构授权 → 同一事务内写核销记录并累加医生支数
 import { newId, tx } from './db.js';
-import { classifyProduct, VerifyUnavailable } from './verify.js';
+import { classifyProduct, normalizeCode, VerifyUnavailable } from './verify.js';
+
+export { normalizeCode };
 
 export class ScanError extends Error {
   constructor(message, status, extra = {}) {
@@ -11,18 +13,6 @@ export class ScanError extends Error {
 }
 
 const PRODUCT = { blue: 'JUVELOOK', black: 'JUVELOOK Volume' };
-
-// 防伪码：去掉空白；扫码结果可能是含 code 参数的 URL，取出码值
-export function normalizeCode(input) {
-  let s = String(input || '').trim();
-  try {
-    const u = new URL(s);
-    s = u.searchParams.get('code') || u.pathname.split('/').filter(Boolean).at(-1) || '';
-  } catch {
-    // 不是 URL，直接作为码值
-  }
-  return s.replace(/\s+/g, '').slice(0, 64);
-}
 
 const isExpired = (date) => {
   const t = Date.parse(String(date).replace(' ', 'T'));

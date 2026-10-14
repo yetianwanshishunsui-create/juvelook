@@ -1,4 +1,4 @@
-import { request } from '../api.js';
+import { request, IS_DEMO } from '../api.js';
 import { session } from './store.js';
 
 // 后台请求：会话失效时统一跳回登录页
@@ -30,5 +30,6 @@ export const adminApi = {
   audit: (params) => call('GET', '/audit', { params }),
   importPreview: (file) => call('POST', '/import/preview', { body: file }),
   importCommit: (file) => call('POST', '/import/commit', { body: file }),
-  templateUrl: './api/admin/import/template',
+  // 演示版无法下载文件（沙箱限制）
+  templateUrl: IS_DEMO ? null : './api/admin/import/template',
 };

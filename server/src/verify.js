@@ -14,6 +14,18 @@ export function classifyProduct(productName) {
   return null;
 }
 
+// 防伪码：去掉空白；扫码结果可能是含 code 参数的 URL，取出码值
+export function normalizeCode(input) {
+  let s = String(input || '').trim();
+  try {
+    const u = new URL(s);
+    s = u.searchParams.get('code') || u.pathname.split('/').filter(Boolean).at(-1) || '';
+  } catch {
+    // 不是 URL，直接作为码值
+  }
+  return s.replace(/\s+/g, '').slice(0, 64);
+}
+
 function normalize(body) {
   // 测试接口 code 为字符串 "200"，美团规范为整数 200，两种都接受
   if (Number(body?.code) !== 200 || !body.data) {

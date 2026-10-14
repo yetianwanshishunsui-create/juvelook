@@ -1,6 +1,6 @@
 // 初始化：写入虚拟数据（仅库为空时）并确保存在后台管理员账号
 import { openDb } from './db.js';
-import { seedFakeData } from './fake-data.js';
+import { seedFakeData } from './fake-seed.js';
 import { upsertAdmin } from './accounts.js';
 import { config } from './config.js';
 

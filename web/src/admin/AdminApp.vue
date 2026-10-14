@@ -3,6 +3,7 @@ import { useRoute, useRouter } from 'vue-router';
 import Icon from '../components/Icon.vue';
 import { session, toast, confirmBox } from './store.js';
 import { adminApi } from './api.js';
+import { H5_URL, IS_DEMO } from '../api.js';
 import Modal from './components/Modal.vue';
 
 const route = useRoute();
@@ -32,7 +33,8 @@ async function logout() {
       <div class="sub">认证查询 · 运营后台</div>
       <RouterLink v-for="n in NAV" :key="n.to" :to="n.to" class="nav-a"><Icon :name="n.icon" />{{ n.label }}</RouterLink>
       <div class="spacer"></div>
-      <a class="nav-a" href="./" target="_blank" rel="noopener"><Icon name="home" />查看前台</a>
+      <a v-if="IS_DEMO" class="nav-a" href="./"><Icon name="list" />演示首页</a>
+      <a class="nav-a" :href="H5_URL"><Icon name="home" />查看前台</a>
       <button class="nav-a btn link" style="justify-content: flex-start" type="button" @click="logout"><Icon name="logout" />退出登录</button>
       <div class="who">当前账号 <b>{{ session.user.username }}</b></div>
     </nav>

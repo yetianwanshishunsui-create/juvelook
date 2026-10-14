@@ -59,7 +59,8 @@ const ACT = { create: '新增', update: '更新' };
     <section class="panel">
       <h2>① 下载模板</h2>
       <p class="p">模板含「机构」「医生」两个工作表和填写说明。先填机构，再填医生（医生的所属机构名称须与机构名称一致）。</p>
-      <a class="btn" :href="adminApi.templateUrl" download><Icon name="download" />下载 Excel 模板</a>
+      <a v-if="adminApi.templateUrl" class="btn" :href="adminApi.templateUrl" download><Icon name="download" />下载 Excel 模板</a>
+      <p v-else class="p" style="margin: 0">在线演示版不支持下载和上传文件，此功能在正式部署环境中可用。</p>
     </section>
     <section class="panel">
       <h2>② 上传并预览</h2>

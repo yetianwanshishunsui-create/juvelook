@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { adminApi } from '../api.js';
 import { session } from '../store.js';
+import { IS_DEMO } from '../../api.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -32,6 +33,7 @@ async function submit() {
     <form class="login-card" @submit.prevent="submit">
       <div class="brand-sm">juvelook<span class="reg">®</span></div>
       <h1>运营后台登录</h1>
+      <p v-if="IS_DEMO" class="demo-hint">演示账号 <b>admin</b> · 密码 <b>juvelook-demo</b></p>
       <div class="f">
         <label for="u">账号</label>
         <input id="u" v-model="username" class="input" autocomplete="username" autofocus />
@@ -54,5 +56,6 @@ async function submit() {
 }
 h1 { font-size: 20px; margin: 4px 0 6px; }
 .btn { padding: 11px; font-size: 15px; margin-top: 4px; }
+.demo-hint { margin: -6px 0 0; font-size: 13px; color: var(--accent-deep); background: var(--accent-wash); padding: 8px 12px; border-radius: 10px; }
 .login-err { color: var(--danger); font-size: 13px; margin: -4px 0 0; }
 </style>
