@@ -1,0 +1,12 @@
+{
+  "name": "juvelook",
+  "private": true,
+  "description": "juvelook 认证查询系统（一期）",
+  "scripts": {
+    "install:all": "npm --prefix server ci && npm --prefix web ci",
+    "build": "npm --prefix web run build",
+    "start": "npm --prefix server start",
+    "seed": "npm --prefix server run seed",
+    "test": "npm --prefix server test"
+  }
+}
