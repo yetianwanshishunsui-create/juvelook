@@ -1,9 +1,10 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createRouter, createWebHashHistory, createMemoryHistory } from 'vue-router';
 import { session } from './store.js';
 import { adminApi } from './api.js';
 
 export const router = createRouter({
-  history: createWebHashHistory(),
+  // 单文件测试版：前台占用地址栏的 #，后台路由改用内存历史
+  history: import.meta.env.VITE_STANDALONE ? createMemoryHistory() : createWebHashHistory(),
   routes: [
     { path: '/login', component: () => import('./views/LoginView.vue'), meta: { public: true, title: '登录' } },
     { path: '/', component: () => import('./views/DashboardView.vue'), meta: { title: '数据概览' } },
@@ -28,6 +29,8 @@ router.beforeEach(async (to) => {
   if (!to.meta.public && !session.user) return { path: '/login', query: to.path !== '/' ? { next: to.fullPath } : {} };
   if (to.path === '/login' && session.user) return '/';
 });
+
+if (import.meta.env.VITE_STANDALONE) router.push('/');
 
 router.afterEach((to) => {
   document.title = `${to.meta.title || ''} · juvelook 运营后台`;

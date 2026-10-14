@@ -1,35 +1,35 @@
 <script setup>
 // 测试版专用：悬浮「测试」按钮 + 面板（测试账号、一键登录、测试码规则、重置数据）。正式构建不包含此组件。
 import { ref } from 'vue';
-import { request } from '../api.js';
+import { request, H5_URL, PORTAL_URL, ADMIN_URL } from '../api.js';
 import { resetDemo, DEMO_ADMIN } from '../demo/mock.js';
 
 defineProps({ lift: { type: Boolean, default: false } }); // 后台手机端有底部标签栏，按钮上移
-const open = ref(false);
+const show = ref(false);
 const busy = ref('');
 const DOCTOR = { code: 'JVL-D0001', mobile: '13900000001' };
 
 async function go(kind) {
   busy.value = kind;
   try {
-    if (kind === 'doctor') {
-      await request('POST', '/portal/login', { body: DOCTOR });
-      // 可能已在 H5 页面内，只改 hash 不会重新加载，需显式刷新
-      if (location.pathname.endsWith('admin.html')) location.assign('./#/portal');
-      else {
-        location.hash = '#/portal';
-        location.reload();
-      }
-    } else {
-      await request('POST', '/admin/login', { body: DEMO_ADMIN });
-      if (location.pathname.endsWith('admin.html')) {
-        location.hash = '#/';
-        location.reload();
-      } else location.assign('./admin.html#/');
-    }
+    await request('POST', kind === 'doctor' ? '/portal/login' : '/admin/login', { body: kind === 'doctor' ? DOCTOR : DEMO_ADMIN });
+    goTo(kind === 'doctor' ? PORTAL_URL : ADMIN_URL);
   } finally {
     busy.value = '';
   }
+}
+
+// 跳转并确保进入目标页面的初始状态：只差 # 时浏览器不会重新加载，需显式刷新
+function goTo(url) {
+  const target = new URL(url, location.href);
+  const strip = (u) => u.split('#')[0];
+  location.assign(target.href);
+  if (strip(target.href) === strip(location.href)) location.reload();
+}
+
+function nav(e, url) {
+  e.preventDefault();
+  goTo(url);
 }
 
 function reset() {
@@ -39,20 +39,20 @@ function reset() {
 </script>
 
 <template>
-  <button class="tp-fab" :class="{ lift }" type="button" aria-label="打开测试面板" @click="open = true">测试</button>
-  <div v-if="open" class="tp-overlay" @click.self="open = false">
+  <button class="tp-fab" :class="{ lift }" type="button" aria-label="打开测试面板" @click="show = true">测试</button>
+  <div v-if="show" class="tp-overlay" @click.self="show = false">
     <div class="tp-sheet" role="dialog" aria-modal="true" aria-labelledby="tp-title">
       <div class="tp-hd">
         <h2 id="tp-title">测试面板</h2>
-        <button type="button" class="tp-x" aria-label="关闭" @click="open = false">✕</button>
+        <button type="button" class="tp-x" aria-label="关闭" @click="show = false">✕</button>
       </div>
       <p class="tp-note">测试版：数据为程序生成的虚拟数据，只保存在本机浏览器；验真为模拟，正式版接入华熙验真接口与微信扫一扫。</p>
 
       <h3>入口</h3>
       <div class="tp-links">
-        <a href="./#/">消费者查询</a>
-        <a href="./#/portal">医生端</a>
-        <a href="./admin.html#/">运营后台</a>
+        <a :href="H5_URL" @click="nav($event, H5_URL)">消费者查询</a>
+        <a :href="PORTAL_URL" @click="nav($event, PORTAL_URL)">医生端</a>
+        <a :href="ADMIN_URL" @click="nav($event, ADMIN_URL)">运营后台</a>
       </div>
 
       <h3>一键登录</h3>

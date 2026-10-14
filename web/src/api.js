@@ -64,6 +64,9 @@ export const portalApi = {
 export const PRODUCT = { blue: 'JUVELOOK', black: 'JUVELOOK Volume' };
 export const PRODUCT_SHORT = { blue: 'JUVELOOK', black: 'Volume' };
 
-// 前台 H5 地址（站点根目录）
-export const H5_URL = './';
+// 各入口地址：正式版与多文件测试版为两个页面；单文件测试版用 ?admin 区分
+const STANDALONE = !!import.meta.env.VITE_STANDALONE;
+export const H5_URL = STANDALONE ? '?#/' : './';
+export const PORTAL_URL = STANDALONE ? '?#/portal' : './#/portal';
+export const ADMIN_URL = STANDALONE ? '?admin' : './admin.html#/';
 export const IS_DEMO = !!import.meta.env.VITE_DEMO;
