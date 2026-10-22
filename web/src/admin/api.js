@@ -30,6 +30,8 @@ export const adminApi = {
   audit: (params) => call('GET', '/audit', { params }),
   importPreview: (file) => call('POST', '/import/preview', { body: file }),
   importCommit: (file) => call('POST', '/import/commit', { body: file }),
+  scanImportPreview: (file) => call('POST', '/import/scans/preview', { body: file }),
+  scanImportCommit: (file) => call('POST', '/import/scans/commit', { body: file }),
   // 演示版无法下载文件（沙箱限制）
   templateUrl: IS_DEMO ? null : './api/admin/import/template',
 };

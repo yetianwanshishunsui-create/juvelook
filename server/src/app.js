@@ -48,9 +48,13 @@ export function createApp(db, opts = {}) {
     fallbackKind: verifyCfg.fallbackKind || null,
   });
   api.use('/admin', createAdminRouter(db, sessions));
-  api.use('/portal', createPortalRouter(db, sessions, { redeem, wechat: createWechat(wechatCfg) }));
+  // 医生端扫码核销：客户已确定医生扫码统一走小程序，默认关闭；设 PORTAL_ENABLED=1 可重新开启
+  if (opts.portalEnabled) {
+    api.use('/portal', createPortalRouter(db, sessions, { redeem, wechat: createWechat(wechatCfg) }));
+  }
+  api.get('/features', (req, res) => res.json({ portal: !!opts.portalEnabled }));
 
-  api.get('/meta', (req, res) => res.json(q.meta()));
+  api.get('/meta', (req, res) => res.json({ ...q.meta(), portal: !!opts.portalEnabled }));
 
   // 医生查询：必须带姓名关键词或城市，不提供无条件的全量列表
   api.get('/doctors', (req, res) => {

@@ -8,7 +8,7 @@ export async function startServer(appOpts = {}) {
   const db = openDb(':memory:');
   const ids = seedDemo(db);
   upsertAdmin(db, { username: 'admin', password: 'test-pass-123' });
-  const server = createApp(db, { rateLimitMax: 10_000, ...appOpts }).listen(0);
+  const server = createApp(db, { rateLimitMax: 10_000, portalEnabled: true, ...appOpts }).listen(0);
   await new Promise((r) => server.once('listening', r));
   const base = `http://127.0.0.1:${server.address().port}/api`;
 

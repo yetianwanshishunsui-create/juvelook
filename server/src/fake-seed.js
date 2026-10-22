@@ -14,8 +14,8 @@ export function seedFakeData(db, opts) {
      VALUES (:id, :code, :name, :org_id, :mobile, :blue_count, :black_count, :status)`,
   );
   const insScan = db.prepare(
-    `INSERT INTO scans (id, code, doctor_id, org_id, kind, product_name, batch_number, position_flag, verify_raw, created_at)
-     VALUES (:id, :code, :doctor_id, :org_id, :kind, :product_name, :batch_number, :position_flag, NULL, :created_at)`,
+    `INSERT INTO scans (id, code, doctor_id, org_id, kind, product_name, batch_number, position_flag, verify_raw, created_at, source)
+     VALUES (:id, :code, :doctor_id, :org_id, :kind, :product_name, :batch_number, :position_flag, NULL, :created_at, :source)`,
   );
   tx(db, () => {
     data.orgs.forEach((o) => insOrg.run(o));

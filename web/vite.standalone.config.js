@@ -22,6 +22,8 @@ const utf8Bom = () => ({
 export default defineConfig({
   plugins: [vue(), viteSingleFile(), utf8Bom()],
   base: './',
+  // 测试版会同时引用 server/ 与 web/ 下的 exceljs，统一用 web/ 这一份，避免打包两次
+  resolve: { dedupe: ['exceljs'] },
   build: {
     target: ['es2019', 'safari13'],
     outDir: 'dist-standalone',

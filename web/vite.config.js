@@ -6,6 +6,8 @@ export default defineConfig({
   plugins: [vue()],
   // 相对路径：H5 可部署在域名根目录或任意子路径下
   base: './',
+  // 测试版会同时引用 server/ 与 web/ 下的 exceljs，统一用 web/ 这一份，避免打包两次
+  resolve: { dedupe: ['exceljs'] },
   server: {
     host: true,
     proxy: { '/api': 'http://localhost:3100' },

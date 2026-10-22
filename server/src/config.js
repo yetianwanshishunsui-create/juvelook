@@ -10,6 +10,8 @@ export const config = {
   staticDir: env.STATIC_DIR || resolve(root, 'web/dist'),
   // HTTPS 部署时设为 1，Cookie 加 Secure
   secureCookie: env.SECURE_COOKIE === '1',
+  // 医生端扫码核销（默认关闭，医生扫码统一走客户小程序）
+  portalEnabled: env.PORTAL_ENABLED === '1',
   verify: {
     mode: env.VERIFY_MODE === 'huaxi' ? 'huaxi' : 'mock',
     url: env.VERIFY_URL || 'http://huaxi.panpass.net/API/verification',

@@ -38,6 +38,10 @@ onMounted(async () => {
     wxReady.value = await initWechat();
   } catch (err) {
     if (err.status === 401) phase.value = 'login';
+    else if (err.status === 404) {
+      loadError.value = '医生扫码请使用 JUVELOOK 小程序';
+      phase.value = 'error';
+    }
     else {
       loadError.value = err.message;
       phase.value = 'error';

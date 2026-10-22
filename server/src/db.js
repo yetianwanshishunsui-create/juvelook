@@ -86,6 +86,13 @@ const MIGRATIONS = [
     created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime'))
   );
   `,
+  `
+  -- 核销来源：h5 = 本系统医生端扫码；import = 小程序扫码数据导入。batch_id 记录导入批次，便于对账
+  ALTER TABLE scans ADD COLUMN source TEXT NOT NULL DEFAULT 'h5';
+  ALTER TABLE scans ADD COLUMN batch_id TEXT;
+  CREATE INDEX scans_batch ON scans(batch_id);
+  CREATE INDEX doctors_mobile ON doctors(mobile);
+  `,
 ];
 
 // 事务包装：fn 抛错则回滚

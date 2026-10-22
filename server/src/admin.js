@@ -3,6 +3,7 @@ import express from 'express';
 import { verifyPassword, hashPassword, createLoginThrottle } from './auth.js';
 import { createModel, validateOrg, validateDoctor, ConflictError } from './model.js';
 import { buildTemplate, parseWorkbook, planImport, applyImport } from './importer.js';
+import { createScanImporter } from './scan-import-db.js';
 
 const PAGE_MAX = 100;
 const pageArgs = (q) => {
@@ -247,13 +248,14 @@ export function createAdminRouter(db, sessions) {
     }
     if (['blue', 'black'].includes(req.query.kind)) { where.push('s.kind = :kind'); p.kind = req.query.kind; }
     if (req.query.diverted === '1') where.push(`s.position_flag = '1'`);
+    if (['h5', 'import'].includes(req.query.source)) { where.push('s.source = :source'); p.source = req.query.source; }
     if (/^\d{4}-\d{2}-\d{2}$/.test(req.query.from || '')) { where.push('s.created_at >= :from'); p.from = req.query.from; }
     if (/^\d{4}-\d{2}-\d{2}$/.test(req.query.to || '')) { where.push(`s.created_at < date(:to, '+1 day')`); p.to = req.query.to; }
     const w = where.join(' AND ');
     const from = 'FROM scans s JOIN doctors d ON d.id = s.doctor_id JOIN orgs o ON o.id = s.org_id';
     const total = db.prepare(`SELECT COUNT(*) AS n ${from} WHERE ${w}`).get(p).n;
     const items = db.prepare(
-      `SELECT s.id, s.code, s.kind, s.product_name, s.batch_number, s.position_flag, s.created_at,
+      `SELECT s.id, s.code, s.kind, s.product_name, s.batch_number, s.position_flag, s.created_at, s.source,
          d.id AS doctor_id, d.name AS doctor_name, o.name AS org_name, o.city
        ${from} WHERE ${w} ORDER BY s.created_at DESC LIMIT ${size} OFFSET ${offset}`,
     ).all(p);
@@ -308,6 +310,35 @@ export function createAdminRouter(db, sessions) {
       const summary = applyImport(db, model, plan);
       audit(req, 'import', 'excel', null, summary);
       res.json({ ok: true, summary });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  /* ---------- 小程序扫码数据导入 ---------- */
+  const scanImporter = createScanImporter(db);
+  const ISSUE_LIMIT = 500;
+  const scanView = (plan) => ({
+    summary: plan.summary,
+    doctors: plan.doctors,
+    issues: plan.issues.slice(0, ISSUE_LIMIT),
+    issuesTruncated: plan.issues.length > ISSUE_LIMIT,
+  });
+
+  r.post('/import/scans/preview', xlsxBody, async (req, res) => {
+    try {
+      res.json(scanView(await scanImporter.plan(req.body)));
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  // 有问题的行不阻止导入：可导入的先计入，问题行处理后重新导入同一文件即可（已计过的会自动跳过）
+  r.post('/import/scans/commit', xlsxBody, async (req, res) => {
+    try {
+      const { batchId, plan } = await scanImporter.apply(req.body);
+      audit(req, 'import', 'scans', batchId, plan.summary);
+      res.json({ ok: true, batchId, ...scanView(plan) });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }

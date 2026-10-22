@@ -1,8 +1,10 @@
 <script setup>
-// 测试版专用：悬浮「测试」按钮 + 面板（测试账号、一键登录、测试码规则、重置数据）。正式构建不包含此组件。
+// 测试版专用：悬浮「测试」按钮 + 面板（测试账号、一键登录、导入测试表、重置数据）。正式构建不包含此组件。
 import { ref } from 'vue';
 import { request, H5_URL, PORTAL_URL, ADMIN_URL } from '../api.js';
-import { resetDemo, DEMO_ADMIN } from '../demo/mock.js';
+import { resetDemo, DEMO_ADMIN, buildSampleScanXlsx } from '../demo/mock.js';
+
+const PORTAL = !!import.meta.env.VITE_PORTAL;
 
 defineProps({ lift: { type: Boolean, default: false } }); // 后台手机端有底部标签栏，按钮上移
 const show = ref(false);
@@ -32,6 +34,19 @@ function nav(e, url) {
   goTo(url);
 }
 
+// 下载测试用扫码数据表（在 claude.ai 页面中浏览器可能禁止下载，可改用导入页里的「用测试数据试一下」）
+const dlMsg = ref('');
+async function downloadSample() {
+  const blob = await buildSampleScanXlsx();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '测试用扫码验真记录.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  dlMsg.value = '已生成。如未开始下载，可在「数据导入」页点「用测试数据试一下」。';
+}
+
 function reset() {
   resetDemo();
   location.reload();
@@ -46,35 +61,42 @@ function reset() {
         <h2 id="tp-title">测试面板</h2>
         <button type="button" class="tp-x" aria-label="关闭" @click="show = false">✕</button>
       </div>
-      <p class="tp-note">测试版：数据为程序生成的虚拟数据，只保存在本机浏览器；验真为模拟，正式版接入华熙验真接口与微信扫一扫。</p>
+      <p class="tp-note">测试版：数据为程序生成的虚拟数据，只保存在本机浏览器。</p>
 
       <h3>入口</h3>
       <div class="tp-links">
         <a :href="H5_URL" @click="nav($event, H5_URL)">消费者查询</a>
-        <a :href="PORTAL_URL" @click="nav($event, PORTAL_URL)">医生端</a>
+        <a v-if="PORTAL" :href="PORTAL_URL" @click="nav($event, PORTAL_URL)">医生端</a>
         <a :href="ADMIN_URL" @click="nav($event, ADMIN_URL)">运营后台</a>
       </div>
 
       <h3>一键登录</h3>
       <div class="tp-grid">
-        <button type="button" :disabled="!!busy" @click="go('doctor')">
+        <button v-if="PORTAL" type="button" :disabled="!!busy" @click="go('doctor')">
           <b>医生端</b><span>编号 {{ DOCTOR.code }} · 手机 {{ DOCTOR.mobile }}</span>
         </button>
         <button type="button" :disabled="!!busy" @click="go('admin')">
           <b>运营后台</b><span>账号 {{ DEMO_ADMIN.username }} · 密码 {{ DEMO_ADMIN.password }}</span>
         </button>
       </div>
-      <p class="tp-small">其他医生：第 n 位为编号 JVL-D000n、手机 1390000000n（如 JVL-D0012 / 13900000012）。</p>
 
-      <h3>测试防伪码</h3>
-      <ul class="tp-rules">
-        <li><code>86173880123456789013</code> 末位奇数 → JUVELOOK</li>
-        <li><code>86173880123456789012</code> 末位偶数 → JUVELOOK Volume</li>
-        <li>以 <code>0000</code> 结尾 → 防伪码无法识别</li>
-        <li>以 <code>9999</code> 结尾 → 产品已过期</li>
-        <li>以 <code>7</code> 开头 → 验真平台提示窜货</li>
-      </ul>
-      <p class="tp-small">医生端「扫码核销」的输入框下有「填入测试码」，每次生成一个新码。</p>
+      <h3>小程序扫码数据导入</h3>
+      <p class="tp-small" style="margin-top: 0">医生扫码在小程序完成，数据导入后台后，前台支数随之更新。试法：运营后台 →「更多 / 数据导入」→「用测试数据试一下」；或下载测试表后上传。测试表里有正常行，也有重复扫码、消费者扫码、手机号未录入、未授权产品等情况。</p>
+      <div class="tp-grid">
+        <button type="button" @click="downloadSample"><b>下载测试用扫码表</b><span>格式与小程序导出一致，医生手机号为 1390000xxxx</span></button>
+      </div>
+      <p v-if="dlMsg" class="tp-small">{{ dlMsg }}</p>
+
+      <template v-if="PORTAL">
+        <h3>测试防伪码（医生端）</h3>
+        <ul class="tp-rules">
+          <li><code>86173880123456789013</code> 末位奇数 → JUVELOOK</li>
+          <li><code>86173880123456789012</code> 末位偶数 → JUVELOOK Volume</li>
+          <li>以 <code>0000</code> 结尾 → 防伪码无法识别</li>
+          <li>以 <code>9999</code> 结尾 → 产品已过期</li>
+          <li>以 <code>7</code> 开头 → 验真平台提示窜货</li>
+        </ul>
+      </template>
 
       <button type="button" class="tp-reset" @click="reset">重置全部测试数据</button>
     </div>

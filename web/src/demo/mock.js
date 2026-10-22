@@ -5,7 +5,9 @@ import { validateOrg, validateDoctor } from '../../../server/src/validate.js';
 import { createVerifier, classifyProduct, normalizeCode } from '../../../server/src/verify.js';
 import { newId } from '../../../server/src/ids.js';
 
-const KEY = 'jvl-demo-v1';
+const KEY = 'jvl-demo-v2';
+// 医生端是否开放：与服务端 PORTAL_ENABLED 对应，测试版默认关闭（医生扫码走小程序）
+const PORTAL = !!import.meta.env.VITE_PORTAL;
 export const DEMO_ADMIN = { username: 'admin', password: 'juvelook-demo' };
 const verify = createVerifier({ mode: 'mock' });
 const PRODUCT = { blue: 'JUVELOOK', black: 'JUVELOOK Volume' };
@@ -90,6 +92,7 @@ on('GET', '/meta', (s) => {
     doctorCount: docs.length,
     orgCount: s.orgs.filter((o) => o.status === 'active').length,
     cities: Object.keys(count).sort((a, b) => count[b] - count[a] || (a < b ? -1 : 1)),
+    portal: PORTAL,
   };
 });
 
@@ -397,6 +400,7 @@ on('GET', '/admin/scans', (s, { params }) => {
     .filter(({ x, d, o }) => !q || x.code.includes(q) || d?.name.includes(q) || o?.name.includes(q))
     .filter(({ x }) => !params.kind || x.kind === params.kind)
     .filter(({ x }) => params.diverted !== '1' || x.position_flag === '1')
+    .filter(({ x }) => !params.source || (x.source || 'h5') === params.source)
     .filter(({ x }) => !params.from || x.created_at >= params.from)
     .filter(({ x }) => !params.to || x.created_at.slice(0, 10) <= params.to)
     .sort((a, b) => b.x.created_at.localeCompare(a.x.created_at))
@@ -404,6 +408,89 @@ on('GET', '/admin/scans', (s, { params }) => {
   return paginate(rows, params);
 });
 on('GET', '/admin/audit', (s, { params }) => (requireAdmin(s), paginate([...s.audit].reverse(), params)));
+const scanLookups = (s) => ({
+  doctorByPhone: (phone) => {
+    const rows = s.doctors.filter((d) => d.mobile === phone);
+    if (rows.length > 1) return 'ambiguous';
+    const d = rows[0];
+    if (!d) return null;
+    const o = orgById(s, d.org_id);
+    return { id: d.id, name: d.name, code: d.code, org_name: o.name, auth_blue: o.auth_blue, auth_black: o.auth_black };
+  },
+  existingScan: (code) => s.scans.find((x) => x.code === code) || null,
+});
+const readScans = async (body) => {
+  const { parseScanWorkbook } = await import('../../../server/src/scan-import.js');
+  return parseScanWorkbook(body instanceof Blob ? await body.arrayBuffer() : body);
+};
+const scanView = (p) => ({ summary: p.summary, doctors: p.doctors, issues: p.issues.slice(0, 500), issuesTruncated: p.issues.length > 500 });
+on('POST', '/admin/import/scans/preview', async (s, { body }) => {
+  requireAdmin(s);
+  const { planScanImport } = await import('../../../server/src/scan-import.js');
+  try {
+    return scanView(planScanImport(await readScans(body), scanLookups(s)));
+  } catch (err) {
+    if (err instanceof HttpError) throw err;
+    fail(400, err.message);
+  }
+});
+on('POST', '/admin/import/scans/commit', async (s, { body }) => {
+  requireAdmin(s);
+  const { planScanImport } = await import('../../../server/src/scan-import.js');
+  let p;
+  try {
+    p = planScanImport(await readScans(body), scanLookups(s));
+  } catch (err) {
+    fail(400, err.message);
+  }
+  const batchId = newId();
+  for (const it of p.items) {
+    const d = s.doctors.find((x) => x.id === it.doctorId);
+    s.scans.push({
+      id: newId(), code: it.code, doctor_id: d.id, org_id: d.org_id, kind: it.kind, product_name: it.productName,
+      batch_number: it.batchNumber, position_flag: null, created_at: it.time, source: 'import', batch_id: batchId,
+    });
+    d[it.kind === 'blue' ? 'blue_count' : 'black_count']++;
+  }
+  audit(s, 'import', 'scans', batchId, p.summary);
+  return { ok: true, batchId, ...scanView(p) };
+});
+
+// 测试用扫码数据表：与小程序导出格式相同，含可导入行和几种典型问题行
+export async function buildSampleScanXlsx() {
+  const s = load();
+  const { default: ExcelJS } = await import('exceljs');
+  const head = ['用户ID', '用户姓名', '手机号', '用户身份', '获得积分', '验证结果', '渠道码', '产品名称', '品牌名称', '产品标识', '批次号', '产品名称（显示）', '生产日期', '使用期限', '公司名称', '查询次数', '验证时间'];
+  const full = { blue: 'JUVELOOK聚乳酸面部填充剂[Juvelook-C（50mg/瓶）*1瓶/盒]', black: 'JUVELOOK Volume聚乳酸面部填充剂[Juvelook-V（200mg/瓶）*1瓶/盒]' };
+  const short = { blue: 'JUVELOOK蓝瓶', black: 'JUVELOOK黑瓶' };
+  const rand = (n) => Array.from({ length: n }, () => Math.floor(Math.random() * 10)).join('');
+  const udi = () => `0118800051300185172809081 0JC26094121JC260941A${rand(6)}`.replace(' ', '');
+  const now = new Date();
+  const t = (minsAgo) => fmt(new Date(now.getTime() - minsAgo * 60000));
+  const row = (d, kind, opts = {}) => [
+    rand(19), opts.nick || '医生微信昵称', opts.phone ?? d.mobile, opts.role || '医生身份', '50', opts.result || '正常', '',
+    full[kind], '代理类产品', opts.code || udi(), 'JC260941', short[kind], '2026-09-09', '2028-09-08', 'null', '1', t(opts.ago ?? 60),
+  ];
+  const docs = s.doctors.filter((d) => activeDoc(s, d)).slice(0, 6);
+  const kindsOf = (d) => productsOf(orgById(s, d.org_id));
+  const rows = [];
+  docs.forEach((d, i) => {
+    for (let k = 0; k < 2 + (i % 3); k++) rows.push(row(d, kindsOf(d)[k % kindsOf(d).length], { ago: 30 + i * 50 + k * 7 }));
+  });
+  const dupCode = udi();
+  rows.push(row(docs[0], kindsOf(docs[0])[0], { code: dupCode, ago: 20 }));
+  rows.push(row(docs[0], kindsOf(docs[0])[0], { code: dupCode, ago: 10 })); // 同一支扫了两次
+  rows.push(row(docs[1], 'blue', { role: '消费者', phone: '13800000000', ago: 15 })); // 消费者验真
+  rows.push(row(docs[2], kindsOf(docs[2])[0], { phone: '13999999999', ago: 12 })); // 手机号未录入
+  const unauth = s.doctors.find((d) => activeDoc(s, d) && kindsOf(d).length === 1);
+  if (unauth) rows.push(row(unauth, kindsOf(unauth)[0] === 'blue' ? 'black' : 'blue', { ago: 8 })); // 未授权品类
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('扫码验真记录数据导出.xlsx');
+  ws.addRow(head);
+  rows.forEach((r) => ws.addRow(r));
+  return new Blob([await wb.xlsx.writeBuffer()], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+
 const noImport = (s) => {
   requireAdmin(s);
   fail(400, '在线演示版无法上传文件。Excel 导入在正式部署环境中可用：下载模板 → 填写 → 上传预览 → 确认导入。');
@@ -415,6 +502,7 @@ on('POST', '/admin/import/commit', noImport);
 export async function mockRequest(method, path, { params = {}, body } = {}) {
   await new Promise((r) => setTimeout(r, 120)); // 模拟网络延迟
   const s = load();
+  if (!PORTAL && path.startsWith('/portal/')) fail(404, '接口不存在');
   for (const r of routes) {
     if (r.method !== method) continue;
     const m = path.match(r.re);

@@ -114,6 +114,7 @@ export function generateFakeData({ seed = 20261014, now = new Date() } = {}) {
       product_name: kind === 'blue' ? 'JUVELOOK' : 'JUVELOOK Volume',
       batch_number: `JV${pick(['2603', '2604', '2605', '2606'])}${String(int(1, 40)).padStart(2, '0')}`,
       position_flag: r() < 0.02 ? '1' : '0',
+      source: 'import', // 正式环境中医生扫码均来自小程序导入
       created_at: fmt(t),
     });
     d[kind === 'blue' ? 'blue_count' : 'black_count']++;

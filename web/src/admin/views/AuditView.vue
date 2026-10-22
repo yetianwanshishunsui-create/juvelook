@@ -5,7 +5,7 @@ import Pager from '../components/Pager.vue';
 
 const { page, data, loading } = useList(adminApi.audit);
 const ACTION = { create: '新增', update: '修改', delete: '删除', import: '批量导入', password: '修改密码' };
-const ENTITY = { org: '机构', doctor: '医生', excel: 'Excel', admin: '账号' };
+const ENTITY = { org: '机构', doctor: '医生', excel: '医生 / 机构资料', scans: '小程序扫码数据', admin: '账号' };
 
 function describe(l) {
   let d = {};
@@ -13,6 +13,9 @@ function describe(l) {
     d = JSON.parse(l.detail || '{}') || {};
   } catch {
     // 忽略
+  }
+  if (l.action === 'import' && l.entity === 'scans') {
+    return `计入 ${d.importable} 支（JUVELOOK ${d.blue}、Volume ${d.black}，${d.doctorCount} 位医生）；跳过已计过 ${d.skippedDuplicate} 行；需处理 ${d.issueRows} 行`;
   }
   if (l.action === 'import') return `新增机构 ${d.orgCreate}、更新机构 ${d.orgUpdate}、新增医生 ${d.doctorCreate}、更新医生 ${d.doctorUpdate}`;
   const parts = [d.name];

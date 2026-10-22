@@ -92,7 +92,7 @@ const noneText = computed(() => {
   <div class="topbar home-top">
     <div class="brand-sm">juvelook<span class="reg">®</span></div>
     <span style="flex: 1"></span>
-    <RouterLink to="/portal" class="portal-link"><Icon name="scan" class="ic-16" />医生入口</RouterLink>
+    <RouterLink v-if="meta?.portal" to="/portal" class="portal-link"><Icon name="scan" class="ic-16" />医生入口</RouterLink>
   </div>
 
   <section class="hero">
