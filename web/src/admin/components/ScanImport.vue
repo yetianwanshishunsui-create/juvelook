@@ -88,6 +88,7 @@ const S = computed(() => view.value?.summary);
       </div>
       <p class="p skip">
         表格共 {{ S.totalRows }} 行。跳过：已计过的 {{ S.skippedDuplicate }} 行，非医生扫码 {{ S.skippedNotDoctor }} 行，验证结果异常 {{ S.skippedAbnormal }} 行。
+        <template v-if="S.nameMismatch"><br /><span class="warn">有 {{ S.nameMismatch }} 位医生的表格姓名与系统不一致（见下方标注），请确认手机号是否对应正确再导入。</span></template>
         <template v-if="S.issueRows"><br /><span class="bad">需处理 {{ S.issueRows }} 行（见下方），这些行不会计入。</span>处理后重新导入同一份表格即可补上，已计过的不会重复。</template>
       </p>
       <div v-if="!done" class="acts">
@@ -104,7 +105,7 @@ const S = computed(() => view.value?.summary);
           <thead><tr><th>医生</th><th>认证编号</th><th>机构</th><th>手机号</th><th class="num">JUVELOOK</th><th class="num">Volume</th></tr></thead>
           <tbody>
             <tr v-for="d in view.doctors" :key="d.doctorId">
-              <td><b>{{ d.name }}</b></td>
+              <td><b>{{ d.name }}</b><div v-if="d.sheetNames.length" class="warn small">表格中姓名：{{ d.sheetNames.join('、') }}</div></td>
               <td class="mono">{{ d.code }}</td>
               <td>{{ d.org }}</td>
               <td class="mono">{{ d.phone }}</td>
@@ -153,6 +154,8 @@ const S = computed(() => view.value?.summary);
 .sum .hl b { color: var(--accent-deep); }
 .skip { margin: 0 0 14px; }
 .bad { color: var(--danger); font-weight: 600; }
+.warn { color: var(--danger); }
+.warn.small { font-size: 12px; font-weight: 600; margin-top: 2px; }
 .acts { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .sec { font-size: 15px; margin: 20px 0 10px; }
 .errs { color: var(--danger); font-size: 12.5px; font-weight: 600; }

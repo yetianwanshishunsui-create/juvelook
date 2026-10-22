@@ -55,7 +55,7 @@ test('预览：过滤非医生与异常结果，按产品标识去重，列出�
   assert.equal(status, 200);
   assert.deepEqual(
     { ...body.summary },
-    { totalRows: 8, importable: 2, blue: 1, black: 1, doctorCount: 1, skippedNotDoctor: 1, skippedAbnormal: 1, skippedDuplicate: 1, issueRows: 3 },
+    { totalRows: 8, importable: 2, blue: 1, black: 1, doctorCount: 1, skippedNotDoctor: 1, skippedAbnormal: 1, skippedDuplicate: 1, issueRows: 3, nameMismatch: 1 },
   );
   assert.deepEqual(body.issues.map((i) => i.row), [7, 8, 9]);
   assert.match(body.issues[0].reason, /没有这个手机号/);
@@ -99,6 +99,20 @@ test('确认导入：支数累加，前台同步；重复导入同一文件不�
   assert.ok(logs.body.items.some((l) => l.entity === 'scans'));
   const list = await call('GET', '/admin/scans?source=import');
   assert.equal(list.body.total, 4);
+});
+
+test('表格姓名与系统医生不一致时提示，一致时不提示', async () => {
+  const mk = (name, serial) => {
+    const r = row({ phone: '13900000001', code: udi(serial) });
+    r[1] = name;
+    return r;
+  };
+  let { body } = await call('POST', '/admin/import/scans/preview', await xlsx([mk('林薇', 'N0001')]), { raw: true });
+  assert.equal(body.summary.nameMismatch, 0);
+  ({ body } = await call('POST', '/admin/import/scans/preview', await xlsx([mk('林伟', 'N0002'), mk('林薇', 'N0003')]), { raw: true }));
+  assert.equal(body.summary.nameMismatch, 1);
+  assert.deepEqual(body.doctors[0].sheetNames, ['林伟']);
+  assert.equal(body.summary.importable, 2);
 });
 
 test('Excel 日期格式的验证时间也能识别', async () => {

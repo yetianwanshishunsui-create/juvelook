@@ -11,6 +11,7 @@
 //   产品标识已在系统中计过数           → 跳过（重复导入、同一支多次扫码都只算一次）
 //   同一文件中产品标识重复             → 只保留最早的一次
 //   其余                               → 导入，医生对应产品支数 +1
+//   另：表格「用户姓名」与系统医生姓名不一致时，在按医生汇总中提示核对（仍计入）
 import ExcelJS from 'exceljs';
 
 const COLUMNS = {
@@ -151,10 +152,14 @@ export function planScanImport(rows, lookups) {
   const byDoctor = new Map();
   for (const it of items) {
     const d = lookups.doctorByPhone(it.phone);
-    const agg = byDoctor.get(d.id) || { doctorId: d.id, name: d.name, code: d.code, org: d.org_name, phone: it.phone, blue: 0, black: 0 };
+    const agg = byDoctor.get(d.id) || { doctorId: d.id, name: d.name, code: d.code, org: d.org_name, phone: it.phone, blue: 0, black: 0, sheetNames: [] };
     agg[it.kind]++;
+    // 表格里的姓名与系统不一致时提示核对（可能是系统中手机号录错，支数会算到别人名下）；不拦截
+    const sheetName = String(it.raw.name || '').trim();
+    if (sheetName && sheetName !== d.name && !agg.sheetNames.includes(sheetName)) agg.sheetNames.push(sheetName);
     byDoctor.set(d.id, agg);
   }
+  const nameMismatch = [...byDoctor.values()].filter((d) => d.sheetNames.length).length;
   issues.sort((a, b) => a.row - b.row);
 
   return {
@@ -171,6 +176,7 @@ export function planScanImport(rows, lookups) {
       skippedAbnormal: skipped.abnormal,
       skippedDuplicate: skipped.duplicate,
       issueRows: issues.length,
+      nameMismatch,
     },
   };
 }

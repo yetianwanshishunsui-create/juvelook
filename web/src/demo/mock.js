@@ -468,7 +468,7 @@ export async function buildSampleScanXlsx() {
   const now = new Date();
   const t = (minsAgo) => fmt(new Date(now.getTime() - minsAgo * 60000));
   const row = (d, kind, opts = {}) => [
-    rand(19), opts.nick || '医生微信昵称', opts.phone ?? d.mobile, opts.role || '医生身份', '50', opts.result || '正常', '',
+    rand(19), opts.nick || d.name, opts.phone ?? d.mobile, opts.role || '医生身份', '50', opts.result || '正常', '',
     full[kind], '代理类产品', opts.code || udi(), 'JC260941', short[kind], '2026-09-09', '2028-09-08', 'null', '1', t(opts.ago ?? 60),
   ];
   const docs = s.doctors.filter((d) => activeDoc(s, d)).slice(0, 6);
