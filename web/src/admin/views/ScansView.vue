@@ -6,6 +6,8 @@ import Pager from '../components/Pager.vue';
 import { PRODUCT } from '../../api.js';
 
 const route = useRoute();
+// 窜货信息只来自本系统医生端验真（小程序导出不含），仅从概览的「窜货预警」进入时显示相关筛选与列
+const showDiverted = route.query.diverted === '1';
 const { filters, page, data, loading } = useList(adminApi.scans, {
   q: '', kind: '', from: '', to: '', diverted: route.query.diverted === '1' ? '1' : '',
   source: ['h5', 'import'].includes(route.query.source) ? route.query.source : '',
@@ -13,7 +15,7 @@ const { filters, page, data, loading } = useList(adminApi.scans, {
 </script>
 
 <template>
-  <div class="page-hd"><h1>核销记录</h1></div>
+  <div class="page-hd"><h1>扫码记录</h1></div>
 
   <div class="toolbar">
     <input v-model="filters.q" class="input" placeholder="防伪码 / 医生 / 机构" />
@@ -30,13 +32,13 @@ const { filters, page, data, loading } = useList(adminApi.scans, {
       <option value="import">小程序导入</option>
       <option value="h5">H5 扫码</option>
     </select>
-    <label class="check"><input v-model="filters.diverted" type="checkbox" true-value="1" false-value="" />仅看窜货预警</label>
+    <label v-if="showDiverted" class="check"><input v-model="filters.diverted" type="checkbox" true-value="1" false-value="" />仅看窜货预警</label>
   </div>
 
   <div class="table-wrap" :style="{ opacity: loading ? 0.6 : 1 }">
     <table v-cards class="tbl">
       <thead>
-        <tr><th>扫码时间</th><th>产品</th><th>防伪码 / 产品标识</th><th>批号</th><th>医生</th><th>机构</th><th>来源</th><th>验真提示</th></tr>
+        <tr><th>扫码时间</th><th>产品</th><th>防伪码 / 产品标识</th><th>批号</th><th>医生</th><th>机构</th><th>来源</th><th v-if="showDiverted">验真提示</th></tr>
       </thead>
       <tbody>
         <tr v-for="s in data.items" :key="s.id">
@@ -47,9 +49,9 @@ const { filters, page, data, loading } = useList(adminApi.scans, {
           <td class="nowrap">{{ s.doctor_name }}</td>
           <td>{{ s.org_name }}<span class="muted"> · {{ s.city }}</span></td>
           <td class="nowrap">{{ s.source === 'import' ? '小程序导入' : 'H5 扫码' }}</td>
-          <td><span v-if="s.position_flag === '1'" class="tag warn">疑似窜货</span><span v-else class="muted">—</span></td>
+          <td v-if="showDiverted"><span v-if="s.position_flag === '1'" class="tag warn">疑似窜货</span><span v-else class="muted">—</span></td>
         </tr>
-        <tr v-if="!data.items.length && !loading"><td colspan="8" class="empty-row">没有符合条件的核销记录</td></tr>
+        <tr v-if="!data.items.length && !loading"><td :colspan="showDiverted ? 8 : 7" class="empty-row">没有符合条件的扫码记录</td></tr>
       </tbody>
     </table>
   </div>

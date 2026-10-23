@@ -15,7 +15,7 @@ const NAV = [
   { to: '/', label: '数据概览', icon: 'chart' },
   { to: '/doctors', label: '医生管理', icon: 'doc' },
   { to: '/orgs', label: '机构管理', icon: 'org' },
-  { to: '/scans', label: '核销记录', icon: 'scan' },
+  { to: '/scans', label: '扫码记录', icon: 'scan' },
   { to: '/import', label: '数据导入', icon: 'upload' },
   { to: '/audit', label: '操作日志', icon: 'list' },
   { to: '/account', label: '账号设置', icon: 'key' },
@@ -25,7 +25,7 @@ const TABS = [
   { to: '/', label: '概览', icon: 'chart' },
   { to: '/doctors', label: '医生', icon: 'doc' },
   { to: '/orgs', label: '机构', icon: 'org' },
-  { to: '/scans', label: '核销', icon: 'scan' },
+  { to: '/scans', label: '扫码', icon: 'scan' },
   { to: '/more', label: '更多', icon: 'list' },
 ];
 const tabOn = (to) => (to === '/more' ? ['/more', '/import', '/audit', '/account'].includes(route.path) : route.path === to);
@@ -78,5 +78,7 @@ async function logout() {
   opacity: 0; pointer-events: none; transition: .22s; z-index: 80;
 }
 .adm-toast.on { opacity: 1; transform: translate(-50%, 0); }
+/* 手机端顶部有品牌条，提示放在它下方 */
+@media (max-width: 860px) { .adm-toast { top: calc(66px + env(safe-area-inset-top, 0px)); } }
 .adm-toast.err { background: var(--danger); color: #fff; }
 </style>

@@ -24,7 +24,7 @@ const trySample = import.meta.env.VITE_DEMO
   ? async () => {
       const { buildSampleScanXlsx } = await import('../../demo/mock.js');
       const blob = await buildSampleScanXlsx();
-      preview(new File([blob], '测试用扫码验真记录.xlsx'));
+      preview(new File([blob], '示例扫码验真记录.xlsx'));
     }
   : null;
 
@@ -71,7 +71,7 @@ const S = computed(() => view.value?.summary);
     </p>
     <input ref="input" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden @change="pick" />
     <button class="btn primary" type="button" :disabled="busy" @click="input.click()"><Icon name="upload" />{{ busy && !plan ? '读取中…' : '选择 Excel 文件' }}</button>
-    <button v-if="trySample" class="btn" type="button" style="margin-left: 8px" :disabled="busy" @click="trySample">用测试数据试一下</button>
+    <button v-if="trySample" class="btn" type="button" style="margin-left: 8px" :disabled="busy" @click="trySample">用示例数据试一下</button>
     <span v-if="file" class="fname">{{ file.name }}</span>
   </section>
 
@@ -95,7 +95,7 @@ const S = computed(() => view.value?.summary);
         <button class="btn primary" type="button" :disabled="busy || !S.importable" @click="commit">{{ busy ? '导入中…' : `确认计入 ${S.importable} 支` }}</button>
         <span v-if="!S.importable" class="p" style="margin: 0">没有可计入的新数据</span>
       </div>
-      <RouterLink v-else to="/scans?source=import" class="btn">查看导入的核销记录</RouterLink>
+      <RouterLink v-else to="/scans?source=import" class="btn">查看导入的扫码记录</RouterLink>
     </section>
 
     <template v-if="view.doctors.length">

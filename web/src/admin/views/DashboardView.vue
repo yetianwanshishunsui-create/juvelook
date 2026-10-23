@@ -21,9 +21,9 @@ const tiles = computed(() => {
     { label: '授权机构', value: t.orgs, unit: '家' },
     { label: 'JUVELOOK 累计', value: t.blue, unit: '支', kind: 'blue' },
     { label: 'JUVELOOK Volume 累计', value: t.black, unit: '支', kind: 'black' },
-    { label: '今日核销', value: t.scans_today, unit: '支' },
-    { label: '近 7 天核销', value: t.scans_7d, unit: '支' },
-    { label: '窜货预警', value: t.diverted, unit: '条', warn: t.diverted > 0, to: '/scans?diverted=1' },
+    { label: '今日扫码', value: t.scans_today, unit: '支' },
+    { label: '近 7 天扫码', value: t.scans_7d, unit: '支' },
+    ...(t.diverted > 0 ? [{ label: '窜货预警', value: t.diverted, unit: '条', warn: true, to: '/scans?diverted=1' }] : []),
   ];
 });
 
@@ -92,7 +92,7 @@ const totalRange = computed(() => days.value.reduce((s, d) => s + d.blue + d.bla
   <div v-if="stats" class="grid2">
     <section class="panel">
       <div class="ch-hd">
-        <h2>近 14 天核销量</h2>
+        <h2>近 14 天扫码量</h2>
         <div class="legend">
           <span><i class="cap blue"></i>{{ PRODUCT.blue }}</span>
           <span><i class="cap black"></i>{{ PRODUCT.black }}</span>
@@ -100,7 +100,7 @@ const totalRange = computed(() => days.value.reduce((s, d) => s + d.blue + d.bla
       </div>
       <p class="ch-sub">合计 {{ totalRange }} 支</p>
       <div class="ch-wrap" @mouseleave="hover = null">
-        <svg :viewBox="`0 0 ${W} ${H}`" class="ch" role="img" :aria-label="`近 14 天核销量，合计 ${totalRange} 支`">
+        <svg :viewBox="`0 0 ${W} ${H}`" class="ch" role="img" :aria-label="`近 14 天扫码量，合计 ${totalRange} 支`">
           <g class="grid">
             <template v-for="t in chart.ticks" :key="t.v">
               <line :x1="PAD.l" :x2="W - PAD.r" :y1="t.y" :y2="t.y" />
@@ -129,14 +129,14 @@ const totalRange = computed(() => days.value.reduce((s, d) => s + d.blue + d.bla
     </section>
 
     <section class="panel">
-      <h2>近 30 天核销 Top 5 医生</h2>
+      <h2>近 30 天扫码 Top 5 医生</h2>
       <ol class="top">
         <li v-for="(d, i) in stats.topDoctors" :key="d.id">
           <span class="rk">{{ i + 1 }}</span>
           <div class="tm"><div class="tn">{{ d.name }}</div><div class="to">{{ d.org_name }}</div></div>
           <b>{{ d.n }} 支</b>
         </li>
-        <li v-if="!stats.topDoctors.length" class="to">暂无核销</li>
+        <li v-if="!stats.topDoctors.length" class="to">暂无扫码记录</li>
       </ol>
     </section>
   </div>

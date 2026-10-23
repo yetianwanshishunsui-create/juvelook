@@ -89,7 +89,7 @@ const authed = (d, k) => (k === 'blue' ? d.auth_blue : d.auth_black);
   <div class="table-wrap" :style="{ opacity: loading ? 0.6 : 1 }">
     <table v-cards class="tbl">
       <thead>
-        <tr><th>医生</th><th>认证编号</th><th>所属机构</th><th>手机号</th><th class="num">JUVELOOK</th><th class="num">Volume</th><th class="num">扫码核销</th><th>状态</th><th></th></tr>
+        <tr><th>医生</th><th>认证编号</th><th>所属机构</th><th>手机号</th><th class="num">JUVELOOK</th><th class="num">Volume</th><th class="num">扫码记录</th><th>状态</th><th></th></tr>
       </thead>
       <tbody>
         <tr v-for="d in data.items" :key="d.id">
@@ -158,7 +158,7 @@ const authed = (d, k) => (k === 'blue' ? d.auth_blue : d.auth_black);
         </div>
       </div>
       <p v-if="editing.id" class="help full" style="margin: 0; font-size: 12px; color: var(--ink-faint)">
-        支数包含扫码核销的累计值，人工修改会记录到操作日志。
+        支数包含导入的扫码累计值，人工修改会记录到操作日志。
       </p>
     </form>
     <template #footer>

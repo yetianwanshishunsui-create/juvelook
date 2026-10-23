@@ -5,7 +5,7 @@ import { validateOrg, validateDoctor } from '../../../server/src/validate.js';
 import { createVerifier, classifyProduct, normalizeCode } from '../../../server/src/verify.js';
 import { newId } from '../../../server/src/ids.js';
 
-const KEY = 'jvl-demo-v2';
+const KEY = 'jvl-demo-v3';
 // 医生端是否开放：与服务端 PORTAL_ENABLED 对应，测试版默认关闭（医生扫码走小程序）
 const PORTAL = !!import.meta.env.VITE_PORTAL;
 export const DEMO_ADMIN = { username: 'admin', password: 'juvelook-demo' };
