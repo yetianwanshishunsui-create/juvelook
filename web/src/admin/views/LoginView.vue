@@ -6,8 +6,10 @@ import { session } from '../store.js';
 
 const route = useRoute();
 const router = useRouter();
-const username = ref('');
-const password = ref('');
+// 演示版自动填好演示账号；正式构建中 VITE_DEMO 为空，此处为空字符串
+const DEMO = !!import.meta.env.VITE_DEMO;
+const username = ref(import.meta.env.VITE_DEMO ? 'admin' : '');
+const password = ref(import.meta.env.VITE_DEMO ? 'juvelook-demo' : '');
 const error = ref('');
 const busy = ref(false);
 
@@ -32,6 +34,7 @@ async function submit() {
     <form class="login-card" @submit.prevent="submit">
       <div class="brand-sm">juvelook<span class="reg">®</span></div>
       <h1>运营后台登录</h1>
+      <p v-if="DEMO" class="demo-fill">演示账号已自动填写，直接点「登录」即可</p>
       <div class="f">
         <label for="u">账号</label>
         <input id="u" v-model="username" class="input" autocomplete="username" autofocus />
@@ -54,5 +57,6 @@ async function submit() {
 }
 h1 { font-size: 20px; margin: 4px 0 6px; }
 .btn { padding: 11px; font-size: 15px; margin-top: 4px; }
+.demo-fill { margin: -8px 0 0; font-size: 13px; color: var(--accent-deep); background: var(--accent-wash); padding: 8px 12px; border-radius: 10px; }
 .login-err { color: var(--danger); font-size: 13px; margin: -4px 0 0; }
 </style>
